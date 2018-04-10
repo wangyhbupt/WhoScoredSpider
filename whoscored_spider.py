@@ -4,7 +4,7 @@ import sys
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-2
+
 #检查比赛结束的间隔
 CheckMatchEndInterval = 300
 #发生异常是的重试间隔
