@@ -1,0 +1,7 @@
+使用fixture中的game_ended_at字段来判断比赛是否结束
+进球 type=goal  用goal_type_code判断进球类型 ng普通进球 p点球 乌龙球og
+"type": "card"牌 用card_type判断牌的类型 y黄牌 y2两张黄牌 r红牌
+"type": "subst"换人 id_team_season_player_in id_team_season_player_out
+elapsed_plus为补时 elapsed为正常时间，因此记录event_time的时候需要记录两者只和，而判断比赛阶段的时候，只用elapsed
+
+欧冠17-18 seasonid 64
