@@ -69,7 +69,7 @@ def GetAccessToken():
         logger.error("GetAccessToken Response Error:{}".format(token_response.status_code))
         raise ResponseError(token_response.status_code)
     else:
-        print(token_response.text)
+        logger.info(token_response.text)
         data = json.loads(token_response.text)
         access_token = data["new_access_token"]
 
@@ -94,8 +94,9 @@ def GetPage():
 
 def ParseGoalIncident(event_info, event_time, event_phase, team_name):
     event_type = "goal"
-    if event_info["goal_type_code"] == "og":
-        event_type = "own_goal"
+    if "goal_type_code" in event_info.keys():
+        if event_info["goal_type_code"] == "og":
+            event_type = "own_goal"
 
     player_name = ""
     player_team_season_id = event_info["id_team_season_scorer"]
@@ -118,7 +119,9 @@ def ParseCardIncident(event_info, event_time, event_phase, team_name):
         logger.error("ParseCardIncident can't find player name player_team_season_id={}".format(player_team_season_id))
 
     event_type = "yellow_card"
-    if event_info["card_type"] == "r":
+    if event_info["card_type"] == "y":
+        event_type = "yellow_card"
+    elif event_info["card_type"] == "r":
         event_type = "red_card"
     elif event_info["card_type"] == "y2":
         event_type = "secondyellow"
@@ -177,7 +180,7 @@ def ParseMatchPlayers():
     for player_info in lineup_data:
         player_nams[player_info["id_team_season_player"]] = player_info["player_name"]
         lineup_type = "starting_lineup"
-        if player_info["is_startingXI"] == "false":
+        if player_info["is_startingXI"] is False:
             lineup_type = "alternate"
 
         player_data = {"host_team": home_team_name, "away_team": away_team_name, "team": player_info["team_name"],
@@ -189,17 +192,20 @@ def ParseMatchPlayers():
 #分析事件
 def ParseMatchIncidents():
     event_data = fixture_data["events"]
+    logger.info("match incidents count={}".format(len(event_data)))
     for event_info in event_data:
-        event_time = int(event_info["elapsed"]) + int(event_info["elapsed_plus"])
+        event_time = int(event_info["elapsed"])
+        if "elapsed_plus" in event_info.keys():
+            event_time += int(event_info["elapsed_plus"])
         event_phase = ParseIncidentPhase(event_info["elapsed"])
         team_name = event_info["team_name"]
         original_event_type = event_info["type"]
         if original_event_type == "goal":
-            ParseGoalIncident(event_info, event_time, event_phase, team_name)
+            ParseGoalIncident(event_info, "{}:00".format(event_time), event_phase, team_name)
         elif original_event_type == "card":
-            ParseCardIncident(event_info, event_time, event_phase, team_name)
+            ParseCardIncident(event_info,  "{}:00".format(event_time), event_phase, team_name)
         elif original_event_type == "subst":
-            ParseSubStIncident(event_info, event_time, event_phase, team_name)
+            ParseSubStIncident(event_info,  "{}:00".format(event_time), event_phase, team_name)
         else:
             continue
 
