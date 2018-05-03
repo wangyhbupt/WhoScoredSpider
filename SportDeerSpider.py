@@ -95,8 +95,15 @@ def GetPage():
 def ParseGoalIncident(event_info, event_time, event_phase, team_name):
     event_type = "goal"
     if "goal_type_code" in event_info.keys():
-        if event_info["goal_type_code"] == "og":
+        if event_info["goal_type_code"] == "ng" or event_info["goal_type_code"] == "p":
+            event_type = "goal"
+        elif event_info["goal_type_code"] == "og":
             event_type = "own_goal"
+        elif event_info["goal_type_code"] == "dg":
+            return
+        else:
+            logger.error("ParseGoalIncident unknown goal type:{}".format(event_info["goal_type_code"]))
+            return
 
     player_name = ""
     player_team_season_id = event_info["id_team_season_scorer"]
